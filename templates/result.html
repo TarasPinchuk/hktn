@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ImageService — Результат</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="{{ url_for('index.index_page') }}" class="brand">Legacy</a>
+    <div class="nav-links">
+      <a href="{{ url_for('index.index_page') }}">Главная</a>
+      <a href="{{ url_for('search.search_page') }}">Поиск</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Результат для {{ data.original_filename }}</h1>
+    <div class="result-card">
+      <div class="card">
+        <img src="{{ url_for('static', filename='processed/' + data.processed_image) }}"
+             alt="Обработанное изображение {{ data.original_filename }}"
+             class="thumbnail">
+      </div>
+      <div class="download-btn-container">
+        <a href="{{ url_for('static', filename='processed/' + data.processed_image) }}"
+           class="btn" download>📥 Скачать изображение</a>
+      </div>
+      {% if data.xml_filename %}
+      <div class="download-btn-container" style="margin-top:20px;">
+        <a href="{{ url_for('result.download_xml', filename=data.xml_filename) }}"
+           class="btn" download>📥 Скачать XML</a>
+      </div>
+      {% endif %}
+      <div class="result-details">
+        {% if data.objects_translated %}
+          <h3>Обнаруженные объекты:</h3>
+          <ul>
+            {% for obj in data.objects_translated %}
+              <li>{{ obj }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p><em>Нет обнаруженных объектов.</em></p>
+        {% endif %}
+
+        {% if data.text %}
+          <h3>Распознанный текст:</h3>
+          <pre style="white-space: pre-wrap;">{{ data.text }}</pre>
+        {% else %}
+          <p><em>Текст не обнаружен.</em></p>
+        {% endif %}
+
+        {% if data.corrected_text %}
+          <h3>Исправленный текст:</h3>
+          <p>{{ data.corrected_text }}</p>
+        {% else %}
+          <p><em>Нет исправленного текста.</em></p>
+        {% endif %}
+
+        {% if data.translated_text %}
+          <h3>Перевод:</h3>
+          <div id="translationResult">
+            <p id="translatedText">{{ data.translated_text }}</p>
+            <button id="voicePlayBtn" class="btn">🔊 Озвучить перевод</button>
+          </div>
+        {% else %}
+          <p><em>Нет перевода.</em></p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="action-buttons">
+      <a href="{{ url_for('index.index_page') }}" class="btn">Вернуться на главную</a>
+    </div>
+  </div>
+
+  <div id="imageModal" class="modal">
+    <span class="close-btn">&times;</span>
+    <img class="modal-content" id="modalImg" alt="Просмотр изображения">
+    <div id="modalCaption"></div>
+  </div>
+
+  <script>
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+    const captionText = document.getElementById('modalCaption');
+    const closeBtn = document.querySelector('.close-btn');
+
+    document.querySelectorAll('.thumbnail').forEach(img => {
+      img.addEventListener('click', () => {
+        modal.style.display = 'block';
+        modalImg.src = img.src;
+        captionText.textContent = img.alt;
+      });
+    });
+
+    closeBtn.onclick = () => {
+      modal.style.display = 'none';
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!('speechSynthesis' in window)) {
+          alert("Ваш браузер не поддерживает синтез речи.");
+          return;
+      }
+
+      const translatedTextEl = document.getElementById("translatedText");
+      const voiceBtn = document.getElementById("voicePlayBtn");
+
+      if (translatedTextEl && voiceBtn) {
+          voiceBtn.addEventListener("click", () => {
+              window.speechSynthesis.cancel();
+              const text = translatedTextEl.textContent.trim();
+              if (text.length > 0) {
+                  const utterance = new SpeechSynthesisUtterance(text);
+                  utterance.lang = "ru-RU";
+                  window.speechSynthesis.speak(utterance);
+              } else {
+                  console.log("Нет текста для озвучивания");
+              }
+          });
+      } else {
+          console.log("Элементы перевода или кнопки не найдены");
+      }
+    });
+  </script>
+</body>
+</html>

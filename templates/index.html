@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hackaton — Главная</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="{{ url_for('index.index_page') }}" class="brand">Legacy™</a>
+    <div class="nav-links">
+      <a href="{{ url_for('index.index_page') }}">Главная</a>
+      <a href="{{ url_for('search.search_page') }}">Поиск</a>
+      <a href="{{ url_for('statistics.stats_page') }}">Статистика</a>
+    </div>
+  </nav>
+
+  <div class="results-container">
+    <div class="history-sidebar">
+      <h2>История</h2>
+      <div class="history-list-container">
+        <ul id="historyList">
+          {% for result in results %}
+          <li class="history-item">
+            <a href="{{ url_for('result.result_page', id=result.id) }}">
+              <img src="{{ url_for('static', filename='processed/' + result.processed_image) }}" alt="{{ result.original_filename }}" class="history-thumbnail">
+              <span>{{ result.original_filename }}</span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="clear-history-container">
+        <form action="{{ url_for('clear.clear_history') }}" method="POST" onsubmit="return confirm('Вы уверены, что хотите очистить историю?');">
+          <button type="submit" class="btn">Очистить историю</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="detail-panel">
+      <div class="upload-search-container">
+        <h1>Загрузить изображение</h1>
+        <form action="{{ url_for('upload.upload_page') }}" method="POST" enctype="multipart/form-data">
+           <input type="file" name="images" multiple required>
+           <button type="submit" class="btn">Загрузить</button>
+       </form>
+        <h1>Поиск</h1>
+        <form action="/search" method="get" class="search-form">
+          <input type="text" name="q" placeholder="Введите запрос..." required>
+          <button type="submit" class="btn">🔍 Найти</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

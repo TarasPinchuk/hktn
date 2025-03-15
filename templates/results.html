@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hackaton — Результаты обработки</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="{{ url_for('index.index_page') }}" class="brand">Legacy™</a>
+    <div class="nav-links">
+      <a href="{{ url_for('index.index_page') }}">Главная</a>
+      <a href="{{ url_for('search.search_page') }}">Поиск</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Результаты обработки</h1>
+    {% if xml_filename %}
+    <div class="download-btn-container" style="margin-bottom:20px;">
+      <a href="{{ url_for('result.download_xml', filename=xml_filename) }}" class="btn" download>📥 Скачать XML</a>
+    </div>
+    {% endif %}
+    {% if results %}
+      {% for result in results %}
+        <div class="result-card">
+          <div class="card">
+            <a href="{{ url_for('result.result_page', id=result.id) }}">
+              <img src="{{ url_for('static', filename='processed/' + result.processed_image) }}"
+                   alt="Обработанное изображение {{ result.original_filename }}"
+                   class="thumbnail">
+            </a>
+          </div>
+          <div class="download-btn-container">
+            <a href="{{ url_for('static', filename='processed/' + result.processed_image) }}"
+               class="btn" download>📥 Скачать изображение</a>
+          </div>
+          <div class="card-info">
+            <p>{{ result.original_filename }}</p>
+          </div>
+          <div class="result-details">
+            {% if result.objects_translated %}
+              <h3>Обнаруженные объекты:</h3>
+              <ul>
+                {% for obj in result.objects_translated %}
+                  <li>{{ obj }}</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p><em>Нет обнаруженных объектов.</em></p>
+            {% endif %}
+            {% if result.text %}
+              <h3>Распознанный текст:</h3>
+              <pre style="white-space: pre-wrap;">{{ result.text }}</pre>
+            {% else %}
+              <p><em>Текст не обнаружен.</em></p>
+            {% endif %}
+            {% if result.corrected_text %}
+              <h3>Исправленный текст:</h3>
+              <p>{{ result.corrected_text }}</p>
+            {% else %}
+              <p><em>Нет исправленного текста.</em></p>
+            {% endif %}
+            {% if result.translated_text %}
+              <h3>Перевод на русский:</h3>
+              <p>{{ result.translated_text }}</p>
+            {% else %}
+              <p><em>Нет перевода.</em></p>
+            {% endif %}
+          </div>
+        </div>
+        <hr>
+      {% endfor %}
+    {% else %}
+      <p>Нет результатов обработки.</p>
+    {% endif %}
+    <p><a href="{{ url_for('index.index_page') }}" class="btn">Вернуться на главную</a></p>
+  </div>
+
+  <div id="imageModal" class="modal">
+    <span class="close-btn">&times;</span>
+    <img class="modal-content" id="modalImg" alt="Просмотр изображения">
+    <div id="modalCaption"></div>
+  </div>
+
+  <script>
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+    const captionText = document.getElementById('modalCaption');
+    const closeBtn = document.querySelector('.close-btn');
+
+    document.querySelectorAll('.thumbnail').forEach(img => {
+      img.addEventListener('click', () => {
+        modal.style.display = 'block';
+        modalImg.src = img.src;
+        captionText.textContent = img.alt;
+      });
+    });
+
+    closeBtn.onclick = () => {
+      modal.style.display = 'none';
+    };
+  </script>
+</body>
+</html>

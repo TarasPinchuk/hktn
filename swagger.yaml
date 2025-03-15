@@ -1,0 +1,119 @@
+swagger: "2.0"
+info:
+  title: "Legacy"
+  version: "1.0.0"
+  description: >
+    API для сервиса обработки изображений. Предоставляет эндпоинты для загрузки изображений,
+    поиска, получения результатов, очистки истории, скачивания XML, просмотра статистики
+    и экспорта статистики в Excel.
+host: "localhost:5000"
+basePath: "/"
+schemes:
+  - "http"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+paths:
+  /:
+    get:
+      summary: "Главная страница"
+      description: "Возвращает HTML главной страницы с результатами обработки изображений."
+      responses:
+        200:
+          description: "Главная страница в формате HTML"
+          schema:
+            type: "string"
+  /upload:
+    post:
+      summary: "Загрузка изображений"
+      description: "Принимает один или несколько файлов изображений и обрабатывает их."
+      consumes:
+        - "multipart/form-data"
+      parameters:
+        - in: "formData"
+          name: "images"
+          type: "file"
+          description: "Файлы изображений для загрузки"
+          required: true
+      responses:
+        200:
+          description: "Страница с результатами обработки (HTML)"
+          schema:
+            type: "string"
+  /search:
+    get:
+      summary: "Поиск по результатам обработки"
+      description: "Ищет по содержимому загруженных и обработанных данных."
+      parameters:
+        - in: "query"
+          name: "q"
+          type: "string"
+          description: "Запрос для поиска (необязательный)"
+          required: false
+      responses:
+        200:
+          description: "Страница результатов поиска (HTML)"
+          schema:
+            type: "string"
+  /clear_history:
+    post:
+      summary: "Очистка истории"
+      description: "Удаляет все JSON, XML-файлы и обработанные изображения."
+      responses:
+        302:
+          description: "Перенаправление на главную страницу после очистки истории"
+  /result/{id}:
+    get:
+      summary: "Просмотр результата обработки"
+      description: "Возвращает HTML-страницу с детальной информацией по результату обработки изображения."
+      parameters:
+        - in: "path"
+          name: "id"
+          type: "string"
+          description: "Идентификатор результата (без расширения)"
+          required: true
+      responses:
+        200:
+          description: "Страница с результатом обработки (HTML)"
+          schema:
+            type: "string"
+        404:
+          description: "Результат не найден"
+  /download_xml/{filename}:
+    get:
+      summary: "Скачать XML-файл"
+      description: "Отдает XML-файл, сгенерированный для текущей загрузки."
+      parameters:
+        - in: "path"
+          name: "filename"
+          type: "string"
+          description: "Имя XML-файла"
+          required: true
+      produces:
+        - "application/xml"
+      responses:
+        200:
+          description: "XML-файл"
+          schema:
+            type: "string"
+  /stats:
+    get:
+      summary: "Просмотр статистики"
+      description: "Возвращает HTML-страницу со статистикой обработки изображений и интерактивными графиками."
+      responses:
+        200:
+          description: "Страница статистики (HTML)"
+          schema:
+            type: "string"
+  /export_stats_excel:
+    get:
+      summary: "Экспорт статистики в Excel"
+      description: "Создает и отдает Excel-файл с общей статистикой, топ-10 слов и топ-10 объектов, включая диаграммы."
+      produces:
+        - "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      responses:
+        200:
+          description: "Excel-файл со статистикой"
+          schema:
+            type: "string"

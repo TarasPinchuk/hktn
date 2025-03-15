@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Статистика</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    .stats-item {
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    .chart-container {
+      margin: 20px 0;
+      width: 100%;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="{{ url_for('index.index_page') }}" class="brand">Legacy</a>
+    <div class="nav-links">
+      <a href="{{ url_for('index.index_page') }}">Главная</a>
+      <a href="{{ url_for('statistics.stats_page') }}">Статистика</a>
+      <a href="{{ url_for('search.search_page') }}">Поиск</a>
+      <a href="{{ url_for('statistics.export_stats_excel') }}">Экспорт в Excel</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Статистика</h1>
+    <div class="stats-item">
+      <h3>Слово, встречающееся чаще всего</h3>
+      <p>{{ stats.most_common_word }} ({{ stats.most_common_word_count }} раз)</p>
+    </div>
+    <div class="stats-item">
+      <h3>Объект, встречающийся чаще всего</h3>
+      <p>{{ stats.most_common_object }} ({{ stats.most_common_object_count }} раз)</p>
+    </div>
+    <div class="stats-item">
+      <h3>Файл с наибольшим количеством исправлений текста</h3>
+      <p>{{ stats.max_corr_file }} ({{ stats.max_corr_count }} исправлений)</p>
+    </div>
+
+    <div class="chart-container">
+      <h3>Диаграмма: Top 10 слов</h3>
+      <canvas id="wordsChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <h3>Диаграмма: Top 10 объектов</h3>
+      <canvas id="objectsChart"></canvas>
+    </div>
+    <div class="action-buttons">
+      <a href="{{ url_for('index.index_page') }}" class="btn">Вернуться на главную</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const topWords = {{ stats.top_words | tojson }};
+    const wordsLabels = topWords.map(item => item[0]);
+    const wordsData = topWords.map(item => item[1]);
+
+    const wordsCtx = document.getElementById('wordsChart').getContext('2d');
+    new Chart(wordsCtx, {
+      type: 'bar',
+      data: {
+        labels: wordsLabels,
+        datasets: [{
+          label: 'Частота',
+          data: wordsData,
+          backgroundColor: 'rgba(54, 162, 235, 0.5)'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    const topObjects = {{ stats.top_objects | tojson }};
+    const objectsLabels = topObjects.map(item => item[0]);
+    const objectsData = topObjects.map(item => item[1]);
+
+    const objectsCtx = document.getElementById('objectsChart').getContext('2d');
+    new Chart(objectsCtx, {
+      type: 'bar',
+      data: {
+        labels: objectsLabels,
+        datasets: [{
+          label: 'Частота',
+          data: objectsData,
+          backgroundColor: 'rgba(255, 99, 132, 0.5)'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
